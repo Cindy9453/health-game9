@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>健康知識格鬥遊戲</title>
+<style>
+body { margin:0; background:#000; color:white; font-family:sans-serif; overflow:hidden; }
+#ui { position:absolute; top:10px; width:100%; display:flex; justify-content:space-between; padding:0 20px; }
+.bar { width:40%; height:20px; background:#333; }
+.hp { height:100%; }
+#heroBar .hp { background:lime; }
+#monsterBar .hp { background:red; }
+#arena { position:absolute; bottom:0; width:100%; height:70%; display:flex; justify-content:space-between; align-items:flex-end; }
+.character { width:200px; height:300px; }
+#hero { background:url('https://i.imgur.com/6X12Q6T.png') no-repeat center/contain; }
+#monster { background:url('https://i.imgur.com/9XnKQ9p.png') no-repeat center/contain; }
+#questionBox { position:absolute; bottom:0; width:100%; background:#111; padding:10px; text-align:center; }
+button { margin:5px; padding:10px; }
+</style>
+</head>
+<body>
+
+<div id="ui">
+<div id="heroBar" class="bar"><div class="hp" style="width:100%"></div></div>
+<div id="monsterBar" class="bar"><div class="hp" style="width:100%"></div></div>
+</div>
+
+<div id="arena">
+<div id="hero" class="character"></div>
+<div id="monster" class="character"></div>
+</div>
+
+<div id="questionBox">
+<h3 id="question"></h3>
+<div id="choices"></div>
+</div>
+
+<audio id="hit" src="https://cdn.pixabay.com/audio/2022/03/15/audio_49b1d9.mp3"></audio>
+<audio id="hurt" src="https://cdn.pixabay.com/audio/2022/03/15/audio_c6ccf4.mp3"></audio>
+
+<script>
+let heroHP = 100;
+let monsterHP = 100;
+let used = [];
+
+const questions = [
+{q:"每天建議睡眠幾小時？",a:["3","5","7-9","12"],c:2},
+{q:"哪個是健康飲食？",a:["炸雞","蔬菜","糖果","汽水"],c:1},
+{q:"BMI過高代表？",a:["過瘦","正常","過重","身高高"],c:2},
+{q:"每天建議喝水量約？",a:["500ml","1000ml","2000ml","5000ml"],c:2},
+{q:"心跳正常範圍？",a:["20","60-100","150","200"],c:1},
+{q:"哪種是有氧運動？",a:["舉重","跑步","發呆","滑手機"],c:1},
+{q:"維生素C來源？",a:["橘子","牛肉","米飯","奶油"],c:0},
+{q:"長期熬夜會？",a:["變健康","免疫下降","變高","無影響"],c:1},
+{q:"哪個是蛋白質來源？",a:["雞蛋","糖","鹽","油"],c:0},
+{q:"過量糖分會？",a:["變瘦","蛀牙","變聰明","無影響"],c:1}
+];
+
+for(let i=questions.length;i<100;i++){
+questions.push({q:"健康知識題 "+(i+1),a:["A","B","C","D"],c:Math.floor(Math.random()*4)});
+}
+
+function getQ(){
+if(used.length===100){alert("全破！");location.reload();}
+let i;
+do{i=Math.floor(Math.random()*100);}while(used.includes(i));
+used.push(i);
+return questions[i];
+}
+
+function updateHP(){
+document.querySelector('#heroBar .hp').style.width=heroHP+'%';
+document.querySelector('#monsterBar .hp').style.width=monsterHP+'%';
+}
+
+function attackHero(){
+heroHP-=10;
+document.getElementById('hero').style.transform='translateX(20px)';
+setTimeout(()=>{document.getElementById('hero').style.transform='';},200);
+document.getElementById('hurt').play();
+}
+
+function attackMonster(){
+monsterHP-=10;
+document.getElementById('monster').style.transform='translateX(-20px)';
+setTimeout(()=>{document.getElementById('monster').style.transform='';},200);
+document.getElementById('hit').play();
+}
+
+function loadQ(){
+const q=getQ();
+document.getElementById('question').innerText=q.q;
+const cdiv=document.getElementById('choices');
+cdiv.innerHTML='';
+q.a.forEach((opt,i)=>{
+let b=document.createElement('button');
+b.innerText=opt;
+b.onclick=()=>{
+if(i===q.c){attackMonster();}
+else{attackHero();}
+updateHP();
+check();
+loadQ();
+};
+cdiv.appendChild(b);
+});
+}
+
+function check(){
+if(heroHP<=0){alert('你輸了');location.reload();}
+if(monsterHP<=0){alert('你贏了');location.reload();}
+}
+
+loadQ();
+</script>
+
+</body>
+</html>
